@@ -76,6 +76,6 @@ def display(title, R, T, O, P, F):
     plt.plot([R[0]], [R[1]], 'bs')
     plt.plot([T[0]], [T[1]], 'rs')
     plt.annotate('T', xy=T)
-    plt.annotate('expert', xy=R)
+    plt.annotate('Gros expert', xy=R)
     fig.suptitle(title, fontsize=16, color=(1, 0, 0, 1))
     plt.show()

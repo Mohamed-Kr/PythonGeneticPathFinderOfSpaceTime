@@ -11,6 +11,7 @@ class GeneticPathFinderOfSpaceTime:
         [[2000, 3000],[2000, 0]],
         [[0, 0], [2000, 0]],
         [[800, 0], [800, 2000]],
+        [[800, 2000], [1000, 2000]],
     ]
     minX = minY = maxY = maxX = 0
     variableObstacles = []
@@ -24,20 +25,20 @@ class GeneticPathFinderOfSpaceTime:
     numberReplacedPerGen = 0
     numberKeepedPerGen = 0
     divergence = 0
-    best = {"pointsNumber": 0, "points": [], "score": 1000000}
+    best = {"pointsNumber": 0, "points": [], "score": 1000000000000}
     populationLength = 0
     maxPointsNumber = 0
 
     def __init__(
         self,
-        populationLength=10,
-        maxPointsNumber=5,
+        populationLength=100,
+        maxPointsNumber=4,
         debug=False,
         plot=False,
-        divergence=10,
+        divergence=100,
         numberOfGens=100,
-        numberReplacedPerGen=4,
-        numberKeepedPerGen=2):
+        numberReplacedPerGen=30,
+        numberKeepedPerGen=5):
         self.populationLength = populationLength
         self.divergence = divergence
         self.numberReplacedPerGen = numberReplacedPerGen
@@ -59,7 +60,7 @@ class GeneticPathFinderOfSpaceTime:
         self.P(["GEN 1:"])
         for p in self.gen:
             self.P([p])
-        self.P(["Best of gen 1", self.best])
+        self.P(["Best at gen 1", self.best])
 
     def makeNextGen(self, previousGen):
         nextGen = self.replaceBadest(self.sortGenByScore(previousGen), self.numberReplacedPerGen)
@@ -83,7 +84,7 @@ class GeneticPathFinderOfSpaceTime:
             self.makeFirstGen()
         while self.gensMade < self.numberOfGens:
             self.makeNextGen(self.gen)
-            self.P(["Best of gen " + str(self.gensMade)+":", self.best])
+            self.P(["Best at gen " + str(self.gensMade)+":", self.best])
         return self.best
 
     def getPathFromPrevious(self, bestPrevious):
@@ -95,31 +96,37 @@ class GeneticPathFinderOfSpaceTime:
         return new
 
     def replaceBadest(self, gen, numberReplacedPerGen):
+        if self.numberReplacedPerGen == 0: return gen
         g = gen
-        for i in range(numberReplacedPerGen):
-            g[len(g)-1-i] = self.newIndividual()
+        print("G:", g, range(numberReplacedPerGen-1))
+        for i in range(numberReplacedPerGen-1):
+            g[-(i+1)] = self.newIndividual()
         return g
 
     def sortGenByScore(self, gen):
         g = []
         for path in gen:
             if g == []: g.append(path)
-            elif path["score"] > g[-1]["score"]: g.insert(0, path)
-            elif path["score"] < g[0]["score"]: g.append(path)
+            elif path["score"] <= g[0]["score"]: g.insert(0, path)
+            else :
+                g.append(path)
+
         return g
 
     def newIndividual(self):
         new = {"pointsNumber": 0, "points": [], "score": 0}
         new["pointsNumber"] = randint(1, self.maxPointsNumber)
-        while not self.isPathPossible(new["points"]):
-            new["points"] = []
-            for p in range(new["pointsNumber"]):
-                new["points"].append([randint(self.minX, self.maxX), randint(self.minY, self.maxY)])
+        #while not self.isPathPossible(new["points"]):
+        new["points"] = []
+        for p in range(new["pointsNumber"]):
+            new["points"].append([randint(self.minX, self.maxX), randint(self.minY, self.maxY)])
         new["score"] = self.getPathScore(new["points"])
         return new
 
     def getPathScore(self, path):
         score = 0
+        if not self.isPathPossible(path):
+            score =100000
         for point in range(len(path)):
             if point == 0:
                 score += sqrt((self.robotPos[0]-path[point][0])**2+(self.robotPos[1]-path[point][1])**2)
@@ -131,7 +138,7 @@ class GeneticPathFinderOfSpaceTime:
             self.best["pointsNumber"] = len(path)
             self.best["points"] = path
             self.best["score"] = score
-            if self.plot: display("Best of gen " + str(self.gensMade), self.robotPos, self.targetPos, self.baseObstacles, self.best["points"], [self.minX, self.maxX, self.minY, self.maxY])
+            if self.plot: display("Best at gen " + str(self.gensMade), self.robotPos, self.targetPos, self.baseObstacles, self.best["points"], [self.minX, self.maxX, self.minY, self.maxY])
         return score
 
     def isPathPossible(self, path):
