@@ -16,6 +16,7 @@ class GeneticPathFinderOfSpaceTime:
     variableObstacles = []
 
     debug = False
+    plot = False
 
     gen = []
     numberOfGens = 0
@@ -27,7 +28,16 @@ class GeneticPathFinderOfSpaceTime:
     populationLength = 0
     maxPointsNumber = 0
 
-    def __init__(self, populationLength = 10, maxPointsNumber = 5, debug = False, divergence=10, numberOfGens = 100, numberReplacedPerGen = 4, numberKeepedPerGen=2):
+    def __init__(
+        self,
+        populationLength=10,
+        maxPointsNumber=5,
+        debug=False,
+        plot=False,
+        divergence=10,
+        numberOfGens=100,
+        numberReplacedPerGen=4,
+        numberKeepedPerGen=2):
         self.populationLength = populationLength
         self.divergence = divergence
         self.numberReplacedPerGen = numberReplacedPerGen
@@ -35,6 +45,7 @@ class GeneticPathFinderOfSpaceTime:
         self.numberOfGens = numberOfGens
         self.maxPointsNumber = maxPointsNumber
         self.debug = debug
+        self.plot = plot
         self.setMaxAndMinXY()
 
     def makeFirstGen(self):
@@ -42,13 +53,13 @@ class GeneticPathFinderOfSpaceTime:
         for i in range(self.populationLength):
             self.gen.append(self.newIndividual())
         self.gensMade = 1
-        print("")
-        print("")
-        print("")
-        print("GEN 1:")
+        self.P([""])
+        self.P([""])
+        self.P([""])
+        self.P(["GEN 1:"])
         for p in self.gen:
-            print(p)
-        print("Best of gen 1", self.best)
+            self.P([p])
+        self.P(["Best of gen 1", self.best])
 
     def makeNextGen(self, previousGen):
         nextGen = self.replaceBadest(self.sortGenByScore(previousGen), self.numberReplacedPerGen)
@@ -59,12 +70,12 @@ class GeneticPathFinderOfSpaceTime:
             if not (i < self.numberKeepedPerGen-1 or i > len(nextGen)-self.numberReplacedPerGen+1):
                 nextGen[i] = self.getPathFromPrevious(bestsOfPreviousGen)
         self.gensMade += 1
-        print("")
-        print("")
-        print("")
-        print("NEW GEN:")
+        self.P([""])
+        self.P([""])
+        self.P([""])
+        self.P(["NEW GEN:"])
         for p in nextGen:
-            print(p)
+            self.P([p])
         self.gen = nextGen
     
     def bestOfGens(self):
@@ -72,7 +83,7 @@ class GeneticPathFinderOfSpaceTime:
             self.makeFirstGen()
         while self.gensMade < self.numberOfGens:
             self.makeNextGen(self.gen)
-            print("Best of gen " + str(self.gensMade)+":", self.best)
+            self.P(["Best of gen " + str(self.gensMade)+":", self.best])
         return self.best
 
     def getPathFromPrevious(self, bestPrevious):
@@ -120,7 +131,7 @@ class GeneticPathFinderOfSpaceTime:
             self.best["pointsNumber"] = len(path)
             self.best["points"] = path
             self.best["score"] = score
-            display("Best of gen " + str(self.gensMade), self.robotPos, self.targetPos, self.baseObstacles, self.best["points"], [self.minX, self.maxX, self.minY, self.maxY])
+            if self.plot: display("Best of gen " + str(self.gensMade), self.robotPos, self.targetPos, self.baseObstacles, self.best["points"], [self.minX, self.maxX, self.minY, self.maxY])
         return score
 
     def isPathPossible(self, path):
@@ -169,5 +180,5 @@ class GeneticPathFinderOfSpaceTime:
         return False
 
 
-pf = GeneticPathFinderOfSpaceTime()
+pf = GeneticPathFinderOfSpaceTime(debug=True, plot=True)
 pf.bestOfGens()
